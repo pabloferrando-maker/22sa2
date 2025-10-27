@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refugio Químico - Tema 2</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos del Pip-Boy */
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: #000;
+            color: #20ff20; /* Verde Fallout */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 1rem;
+            overflow: hidden;
+        }
+
+        #pipboy-container {
+            width: 100%;
+            max-width: 900px;
+            border: 4px solid #20ff20;
+            border-radius: 10px;
+            background: #020a02;
+            padding: 1.5rem;
+            box-shadow: 0 0 20px #20ff20, inset 0 0 15px #20ff20;
+            position: relative;
+            overflow: hidden; /* Para el efecto de scanlines */
+        }
+
+        /* Efecto de Scanlines */
+        #pipboy-container::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: repeating-linear-gradient(
+                to bottom,
+                rgba(0, 0, 0, 0),
+                rgba(0, 0, 0, 0) 1px,
+                rgba(32, 255, 32, 0.1) 2px, /* Línea de scan */
+                rgba(32, 255, 32, 0.1) 3px
+            );
+            opacity: 0.6;
+            animation: flicker 0.15s infinite;
+        }
+
+        /* Animación de parpadeo */
+        @keyframes flicker {
+            0% { opacity: 0.5; }
+            20% { opacity: 0.6; }
+            40% { opacity: 0.5; }
+            60% { opacity: 0.7; }
+            80% { opacity: 0.5; }
+            100% { opacity: 0.6; }
+        }
+
+        h1, h2, h3 {
+            text-shadow: 0 0 8px #20ff20;
+            text-transform: uppercase;
+        }
+
+        .screen {
+            display: none; /* Oculto por defecto */
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Botones y Opciones */
+        .pip-button,
+        #answers-list li {
+            border: 2px solid #20ff20;
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+        }
+
+        .pip-button:hover,
+        #answers-list li:hover {
+            background-color: #20ff20;
+            color: #000;
+            box-shadow: 0 0 15px #20ff20;
+            text-shadow: none;
+        }
+
+        .pip-button[disabled] {
+            border-color: #108010;
+            color: #108010;
+            cursor: not-allowed;
+            text-shadow: none;
+        }
+        .pip-button[disabled]:hover {
+            background-color: transparent;
+            color: #108010;
+            box-shadow: none;
+        }
+
+        /* Stats del Quiz */
+        #quiz-stats {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid #20ff20;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        /* Feedback */
+        #feedback-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            font-size: 1.1rem;
+            border: 2px dashed #20ff20;
+        }
+        .feedback-correct {
+            color: #20ff20;
+            border-color: #20ff20;
+            text-shadow: 0 0 5px #20ff20;
+        }
+        .feedback-incorrect {
+            color: #ff4040;
+            border-color: #ff4040;
+            text-shadow: 0 0 5px #ff4040;
+        }
+
+        /* Inputs del Código Final */
+        .code-input {
+            width: 4rem;
+            height: 4rem;
+            background: #000;
+            border: 2px solid #20ff20;
+            color: #20ff20;
+            font-size: 2rem;
+            text-align: center;
+            margin: 0 0.25rem;
+            font-family: 'Share Tech Mono', monospace;
+            box-shadow: 0 0 10px #20ff20;
+        }
+
+        /* Ocultar flechas en input number */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="pipboy-container">
+
+        <!-- Cabecera del Terminal -->
+        <header id="header" class="flex justify-between items-center border-b-2 border-green-500 pb-2 mb-4">
+            <h1 class="text-2xl md:text-3xl">TERMINAL VAULT-TEC (Mod. QUIM-3000)</h1>
+            <div id="status-light" class="w-4 h-4 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_#20ff20]"></div>
+        </header>
+
+        <!-- Pantalla de Introducción -->
+        <div id="intro-screen" class="screen active text-center">
+            <h2 class="text-2xl mb-4">> INICIANDO PROTOCOLO DE EXAMEN <</h2>
+            <p class="mb-6 text-lg">¡Atención, Morador! Tu supervisor ha detectado niveles anómalos de desconocimiento químico. Completa los 4 módulos de este terminal para demostrar tu aptitud y conseguir una bonificación de 0,5 puntos para tu próximo examen.</p>
+            <p class="mb-6 text-lg">Fallar 5 veces en un módulo resultará en un fallo crítico del sistema y deberás reiniciar el módulo.</p>
+            <p class="mb-8 text-lg text-yellow-400 shadow-[0_0_10px_#ffff00]">Recuperarás tus 5 puntos de integridad (vidas) al iniciar cada nuevo módulo.</p>
+            <div id="start-button" class="pip-button w-full md:w-1/2 mx-auto">
+                ACCEDER A MÓDULOS
+            </div>
+        </div>
+
+        <!-- Pantalla de Selección de Sección -->
+        <div id="section-screen" class="screen">
+            <h2 class="text-2xl mb-4">> MÓDULOS DE FORMACIÓN <</h2>
+            <p class="mb-6">Selecciona un módulo. Completa los 4 para desbloquear la esclusa de bonificación.</p>
+            <div id="section-buttons" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Los botones se generan con JS -->
+            </div>
+            <div id="goto-code-screen-button" class="pip-button w-full md:w-1/2 mx-auto mt-8 hidden">
+                > IR A ESCLUSA DE BONIFICACIÓN <
+            </div>
+        </div>
+
+        <!-- Pantalla de Quiz -->
+        <div id="quiz-screen" class="screen">
+            <div id="quiz-stats">
+                <span id="section-title">Módulo X</span>
+                <span id="question-counter">Pregunta X/10</span>
+                <span id="lives-counter">Integridad: ❤️❤️❤️❤️❤️</span>
+            </div>
+            <h3 id="question-text" class="text-xl md:text-2xl my-6 min-h-[5rem]">Cargando pregunta...</h3>
+            <ul id="answers-list" class="list-none p-0">
+                <!-- Opciones de respuesta generadas por JS -->
+            </ul>
+            <div id="feedback-message" class="hidden"></div>
+        </div>
+
+        <!-- Pantalla de Game Over (Sección) -->
+        <div id="gameover-screen" class="screen text-center">
+            <h2 class="text-3xl text-red-500 shadow-[0_0_10px_#ff0000] mb-6">¡¡FALLO CRÍTICO DEL SISTEMA!!</h2>
+            <p class="text-xl mb-6">Has agotado tus intentos. La integridad del módulo está comprometida.</p>
+            <p class="mb-8">Debes reiniciar el módulo para intentarlo de nuevo.</p>
+            <div id="restart-section-button" class="pip-button w-full md:w-1/2 mx-auto mb-4">
+                REINICIAR MÓDULO
+            </div>
+            <div id="back-to-menu-button" class="pip-button w-full md:w-1/2 mx-auto">
+                VOLVER AL MENÚ DE MÓDULOS
+            </div>
+        </div>
+
+        <!-- Pantalla de Sección Completada -->
+        <div id="section-complete-screen" class="screen text-center">
+            <h2 class="text-3xl mb-6">> MÓDULO COMPLETADO <</h2>
+            <p class="text-xl mb-6">Has superado el módulo. Se te ha transferido un fragmento del código de anulación.</p>
+            <p class="text-5xl font-bold my-8" id="earned-digit-text">#</p>
+            <p class="mb-8">Anota este dígito. Lo necesitarás cuando hayas completado todos los módulos.</p>
+            <div id="next-section-button" class="pip-button w-full md:w-1/2 mx-auto">
+                VOLVER AL MENÚ DE MÓDULOS
+            </div>
+        </div>
+        
+        <!-- Pantalla de Código Final -->
+        <div id="final-code-screen" class="screen text-center">
+            <h2 class="text-3xl mb-4">> ESCLUSA DE BONIFICACIÓN <</h2>
+            <p class="text-xl mb-6">Introduce los 4 dígitos obtenidos en orden (Módulo 1 al 4) para reclamar tu bonificación.</p>
+            <p class="text-lg mb-4">Dígitos obtenidos:</p>
+            <h3 class="text-2xl mb-8" id="final-digits-display">? - ? - ? - ?</h3>
+            <div>
+                <input type="number" id="code-1" class="code-input" maxlength="1" oninput="moveToNext(this, 'code-2')">
+                <input type="number" id="code-2" class="code-input" maxlength="1" oninput="moveToNext(this, 'code-3')">
+                <input type="number" id="code-3" class="code-input" maxlength="1" oninput="moveToNext(this, 'code-4')">
+                <input type="number" id="code-4" class="code-input" maxlength="1">
+            </div>
+            <p id="code-error-message" class="text-red-500 my-4 h-6"></p>
+            <div id="check-code-button" class="pip-button w-full md:w-1/2 mx-auto mt-6">
+                VALIDAR CÓDIGO
+            </div>
+             <div id="back-to-menu-from-code-button" class="pip-button w-full md:w-1/2 mx-auto mt-4">
+                VOLVER AL MENÚ
+            </div>
+        </div>
+
+        <!-- Pantalla de Victoria Final -->
+        <div id="win-screen" class="screen text-center">
+            <h2 class="text-4xl text-yellow-400 shadow-[0_0_20px_#ffff00] mb-6">¡¡CÓDIGO ACEPTADO!!</h2>
+            <p class="text-2xl mb-6">Has demostrado tu competencia. Tu supervisor ha sido notificado.</p>
+            <p class="text-3xl font-bold my-10 p-4 border-4 border-yellow-400">BONIFICACIÓN DE +0,5 PUNTOS APLICADA</p>
+            <p class="text-xl">¡Buen trabajo, Morador! Puedes cerrar el terminal.</p>
+        </div>
+
+    </div>
+
+    <script>
+        // --- BASE DE DATOS DEL QUIZ (Basada en el PDF) ---
+        const quizData = [
+            {
+                name: "Módulo 1: Conceptos del Yermo",
+                codeDigit: 7,
+                completed: false,
+                questions: [
+                    {
+                        question: "Si quemas un trozo de madera, ¿qué tipo de cambio ocurre?",
+                        options: ["Cambio Físico", "Cambio Químico", "Cambio Nuclear", "Cambio de Estado"],
+                        answer: 1,
+                        explanation: "¡Radiación incorrecta! La madera desaparece y se transforma en cenizas y gases (sustancias nuevas). Es un cambio químico."
+                    },
+                    {
+                        question: "Disolver azúcar en agua es un...",
+                        options: ["Cambio Químico", "Compuesto", "Cambio Físico", "Reacción"],
+                        answer: 2,
+                        explanation: "Negativo. El azúcar sigue siendo azúcar y el agua sigue siendo agua, solo están mezclados. Es un cambio físico."
+                    },
+                    {
+                        question: "El Oro (Au) es un ejemplo de...",
+                        options: ["Compuesto", "Mezcla", "Sustancia Elemental", "Reacción"],
+                        answer: 2,
+                        explanation: "Error. El Oro (Au) está formado por un solo tipo de átomo (Au). Es una sustancia elemental."
+                    },
+                    {
+                        question: "El Agua (H2O) es un...",
+                        options: ["Compuesto", "Elemento", "Mezcla Heterogénea", "Cambio Físico"],
+                        answer: 0,
+                        explanation: "Fallo. El H2O está formado por la unión química de dos elementos (H y O). Es un compuesto."
+                    },
+                    {
+                        question: "Propiedad de los cambios químicos:",
+                        options: ["Son fáciles de revertir", "La sustancia no cambia", "Aparecen sustancias nuevas", "Solo cambia la forma"],
+                        answer: 2,
+                        explanation: "¡Incorrecto! La característica principal de un cambio químico (reacción) es que la sustancia original se transforma en sustancias nuevas."
+                    },
+                    {
+                        question: "¿Cómo NO se puede descomponer una sustancia elemental?",
+                        options: ["Por métodos físicos", "Por métodos químicos", "Calentando", "Mezclando"],
+                        answer: 1,
+                        explanation: "¡Exacto! Pero has fallado. Los elementos (como Fe, O) son la base y no se pueden descomponer en algo más simple por métodos químicos."
+                    },
+                    {
+                        question: "El Dióxido de Carbono (CO2) es un ejemplo de...",
+                        options: ["Elemento", "Sustancia Elemental", "Mezcla", "Compuesto"],
+                        answer: 3,
+                        explanation: "Error del sistema. El CO2 está formado por Carbono (C) y Oxígeno (O) unidos químicamente. Es un compuesto."
+                    },
+                    {
+                        question: "Propiedad de los cambios físicos:",
+                        options: ["Son difíciles de revertir", "La sustancia sigue siendo la misma", "Aparece CO2", "Se forman elementos"],
+                        answer: 1,
+                        explanation: "Fallo. En un cambio físico (ej. fundir hielo), la sustancia (agua) no cambia su identidad (sigue siendo H2O)."
+                    },
+                    {
+                        question: "El Oxígeno (O2) que respiramos es...",
+                        options: ["Un compuesto", "Una mezcla", "Una sustancia elemental", "Un cambio químico"],
+                        answer: 2,
+                        explanation: "Negativo. Aunque sean dos átomos (O), ambos son del mismo tipo (Oxígeno). Por tanto, es una sustancia elemental."
+                    },
+                    {
+                        question: "¿Cómo se pueden descomponer los compuestos?",
+                        options: ["Filtrando", "Mediante reacciones químicas", "Agitando", "No se pueden descomponer"],
+                        answer: 1,
+                        explanation: "¡Incorrecto! Los compuestos (como H2O) solo se pueden romper en sus elementos (H y O) mediante reacciones químicas (ej. electrólisis)."
+                    }
+                ]
+            },
+            {
+                name: "Módulo 2: Ley de Lavoisier",
+                codeDigit: 3,
+                completed: false,
+                questions: [
+                    {
+                        question: "En una ecuación química, ¿dónde se escriben los REACTIVOS?",
+                        options: ["A la derecha de la flecha", "Encima de la flecha", "A la izquierda de la flecha", "No se escriben"],
+                        answer: 2,
+                        explanation: "Error. Los REACTIVOS son las sustancias iniciales y se escriben SIEMPRE a la izquierda de la flecha."
+                    },
+                    {
+                        question: "En $A + B \rightarrow C + D$, ¿qué son C y D?",
+                        options: ["Reactivos", "Productos", "Catalizadores", "Elementos"],
+                        answer: 1,
+                        explanation: "Negativo. Las sustancias que se obtienen (a la derecha de la flecha) son los PRODUCTOS."
+                    },
+                    {
+                        question: "La Ley de Lavoisier también se llama...",
+                        options: ["Ley de la Gravedad", "Ley de Conservación de la Masa", "Ley de los Gases", "Ley de la Velocidad"],
+                        answer: 1,
+                        explanation: "Fallo. Lavoisier demostró que la masa total no cambia. Es la Ley de Conservación de la Masa."
+                    },
+                    {
+                        question: "Según Lavoisier, en una reacción química, la materia...",
+                        options: ["Se crea", "Se destruye", "Ni se crea ni se destruye, solo se transforma", "Se duplica"],
+                        answer: 2,
+                        explanation: "¡Radiación! "En una reacción química, la materia ni se crea ni se destruye, solo se transforma". Los átomos se reordenan."
+                    },
+                    {
+                        question: "Si reaccionan 10g de A con 5g de B, ¿cuánta masa de productos se obtendrá?",
+                        options: ["10g", "5g", "15g", "No se puede saber"],
+                        answer: 2,
+                        explanation: "¡Error! Ley de Lavoisier: Masa Reactivos = Masa Productos. Si entran 10g + 5g = 15g, deben salir 15g de productos."
+                    },
+                    {
+                        question: "En la reacción $CH_4 + 2 O_2 \rightarrow CO_2 + 2 H_2O$, ¿qué es el $CH_4$?",
+                        options: ["Producto", "Reactivo", "Catalizador", "Elemento"],
+                        answer: 1,
+                        explanation: "Negativo. El $CH_4$ (Metano) está a la izquierda de la flecha, es una de las sustancias que reaccionan. Es un reactivo."
+                    },
+                    {
+                        question: "En la misma reacción ($CH_4 + 2 O_2 \rightarrow CO_2 + 2 H_2O$), ¿qué es el $CO_2$?",
+                        options: ["Producto", "Reactivo", "Ambos", "Compuesto inicial"],
+                        answer: 0,
+                        explanation: "Fallo. El $CO_2$ (Dióxido de Carbono) está a la derecha de la flecha, es una sustancia nueva que se forma. Es un producto."
+                    },
+                    {
+                        question: "Si quemas 50g de papel y recoges 48g de cenizas, ¿qué pasó con los 2g que faltan?",
+                        options: ["Se destruyeron", "Se convirtieron en energía", "Se transformaron en gases (ej. CO2)", "Es un error de Lavoisier"],
+                        answer: 2,
+                        explanation: "¡Incorrecto! La masa no se destruye. Esos 2g (o más) se han ido en forma de gases (como CO2 y vapor de agua) que no has pesado."
+                    },
+                    {
+                        question: "¿Qué nos dice la Ley de Lavoisier a nivel atómico?",
+                        options: ["Los átomos cambian", "Se crean átomos nuevos", "El número de átomos de cada elemento se conserva", "Los átomos se destruyen"],
+                        answer: 2,
+                        explanation: "Error del sistema. La ley implica que los átomos solo se reordenan. Debe haber el mismo número de átomos de Carbono (por ej.) en los reactivos y en los productos."
+                    },
+                    {
+                        question: "Las sustancias que tenemos DESPUÉS de la reacción se llaman...",
+                        options: ["Reactivos", "Iniciales", "Productos", "Elementos"],
+                        answer: 2,
+                        explanation: "Fallo. Las sustancias nuevas, resultado de la transformación (a la derecha de la flecha), son los PRODUCTOS."
+                    }
+                ]
+            },
+            {
+                name: "Módulo 3: Ajuste y Tipos de Reacción",
+                codeDigit: 9,
+                completed: false,
+                questions: [
+                    {
+                        question: "Ajustar una reacción es asegurarse de que cumple la Ley de...",
+                        options: ["Newton", "Dalton", "Lavoisier", "Einstein"],
+                        answer: 2,
+                        explanation: "Negativo. Ajustamos reacciones para que haya el mismo nº de átomos en ambos lados, cumpliendo la Ley de Conservación de la Masa (Lavoisier)."
+                    },
+                    {
+                        question: "Para ajustar una reacción, ¿qué NUNCA debes cambiar?",
+                        options: ["Los Coeficientes (números grandes)", "Los Subíndices (números pequeños)", "Las flechas", "Los reactivos"],
+                        answer: 1,
+                        explanation: "¡¡ERROR CRÍTICO!! Si cambias el subíndice (ej. $H_2O$ a $H_2O_2$) cambias la sustancia. Solo puedes poner Coeficientes delante."
+                    },
+                    {
+                        question: "Los números grandes que se ponen delante de las fórmulas se llaman...",
+                        options: ["Subíndices", "Coeficientes estequiométricos", "Números atómicos", "Productos"],
+                        answer: 1,
+                        explanation: "Fallo. Los números grandes (ej. el '2' en $2 H_2O$) se llaman coeficientes estequiométricos."
+                    },
+                    {
+                        question: "La reacción $A + B \rightarrow C$ es de tipo...",
+                        options: ["Descomposición", "Síntesis (o Combinación)", "Combustión", "Oxidación simple"],
+                        answer: 1,
+                        explanation: "Incorrecto. Dos reactivos simples se unen para formar un producto más complejo. Es una SÍNTESIS."
+                    },
+                    {
+                        question: "La reacción $A \rightarrow B + C$ es de tipo...",
+                        options: ["Descomposición", "Síntesis", "Combustión", "Oxidación"],
+                        answer: 0,
+                        explanation: "Error. Un reactivo complejo se 'rompe' en dos o más productos simples. Es una DESCOMPOSICIÓN."
+                    },
+                    {
+                        question: "La reacción de la gasolina en un coche es una...",
+                        options: ["Síntesis", "Descomposición", "Combustión", "Reacción lenta"],
+                        answer: 2,
+                        explanation: "Negativo. Es una oxidación muy rápida que libera mucha energía (calor y luz). Es una COMBUSTIÓN."
+                    },
+                    {
+                        question: "Una Combustión necesita un combustible (ej. madera) y un...",
+                        options: ["Catalizador", "Producto", "Comburente (normalmente O2)", "Compuesto"],
+                        answer: 2,
+                        explanation: "Fallo. Para que algo arda se necesita un comburente, que casi siempre es el Oxígeno ($O_2$)."
+                    },
+                    {
+                        question: "La oxidación del hierro (formar óxido) es una reacción donde se combina con...",
+                        options: ["Agua", "Nitrógeno", "Carbono", "Oxígeno"],
+                        answer: 3,
+                        explanation: "Error. La definición original de OXIDACIÓN es la combinación de una sustancia con el OXÍGENO."
+                    },
+                    {
+                        question: "¿Está ajustada la reacción $H_2 + O_2 \rightarrow H_2O$?",
+                        options: ["Sí", "No", "Solo a veces", "Imposible saberlo"],
+                        answer: 1,
+                        explanation: "¡Incorrecto! Hay 2 Oxígenos en reactivos ($O_2$) y solo 1 en productos ($H_2O$). NO está ajustada."
+                    },
+                    {
+                        question: "¿Cuál es la reacción $H_2 + Cl_2 \rightarrow 2 HCl$?",
+                        options: ["Síntesis", "Descomposición", "Combustión", "Física"],
+                        answer: 0,
+                        explanation: "Fallo. Dos reactivos ($H_2$ y $Cl_2$) se combinan para dar un solo producto ($HCl$). Es una SÍNTESIS."
+                    }
+                ]
+            },
+            {
+                name: "Módulo 4: Velocidad de Reacción",
+                codeDigit: 1,
+                completed: false,
+                questions: [
+                    {
+                        question: "Si aumentas la TEMPERATURA, la velocidad de reacción...",
+                        options: ["Aumenta", "Disminuye", "No cambia", "Depende"],
+                        answer: 0,
+                        explanation: "Error. A mayor temperatura, las partículas se mueven más rápido, chocan más y con más energía. La velocidad AUMENTA."
+                    },
+                    {
+                        question: "Si aumentas la CONCENTRACIÓN de reactivos, la velocidad...",
+                        options: ["Disminuye", "No cambia", "Aumenta", "Se detiene"],
+                        answer: 2,
+                        explanation: "Negativo. A mayor concentración, hay más partículas de reactivo en el mismo espacio, por lo que chocan más veces. La velocidad AUMENTA."
+                    },
+                    {
+                        question: "Para que reaccione un sólido (ej. una pastilla), ¿qué es mejor?",
+                        options: ["Dejar la pastilla entera", "Partirla en dos", "Triturarla (hacerla polvo)", "Mojarla primero"],
+                        answer: 2,
+                        explanation: "Fallo. Al triturar el sólido, aumentas la SUPERFICIE DE CONTACTO. La reacción solo ocurre en la superficie, así que irá más rápido."
+                    },
+                    {
+                        question: "Una sustancia que acelera una reacción sin gastarse se llama...",
+                        options: ["Reactivo", "Producto", "Catalizador", "Comburente"],
+                        answer: 2,
+                        explanation: "¡Incorrecto! Esos son los CATALIZADORES. Son 'ayudantes' que ofrecen un camino más fácil para la reacción."
+                    },
+                    {
+                        question: "Guardar la comida en la nevera... (bajar la temperatura)",
+                        options: ["Acelera su descomposición", "Frena su descomposición", "No hace nada", "La cuece"],
+                        answer: 1,
+                        explanation: "Error. Bajar la temperatura hace que las reacciones de descomposición (putrefacción) vayan más lentas. Por eso la comida dura más."
+                    },
+                    {
+                        question: "¿Por qué arde más rápido una astilla que un tronco?",
+                        options: ["Por la temperatura", "Por la concentración", "Por la superficie de contacto", "Por el catalizador"],
+                        answer: 2,
+                        explanation: "Negativo. La astilla, para la misma cantidad de madera, tiene más superficie expuesta al oxígeno. Es por la SUPERFICIE DE CONTACTO."
+                    },
+                    {
+                        question: "Las enzimas de tu cuerpo que ayudan a digerir son ejemplos de...",
+                        options: ["Reactivos", "Catalizadores (biológicos)", "Productos", "Ácidos"],
+                        answer: 1,
+                        explanation: "Fallo del sistema. Las enzimas son catalizadores biológicos: aceleran las reacciones de la digestión sin gastarse."
+                    },
+                    {
+                        question: "Si hay más choques entre las partículas de reactivos, la velocidad...",
+                        options: ["Aumenta", "Disminuye", "Es cero", "Se para"],
+                        answer: 0,
+                        explanation: "Correcto, pero has fallado. La base de la velocidad es el número de choques eficaces. Más choques = Más velocidad."
+                    },
+                    {
+                        question: "Factor que NO influye (según el PDF) en la velocidad:",
+                        options: ["Temperatura", "Presencia de catalizadores", "El color del recipiente", "Concentración"],
+                        answer: 2,
+                        explanation: "Error. El color del recipiente no afecta (a menos que influya en la temperatura, pero no es un factor directo)."
+                    },
+                    {
+                        question: "Los catalizadores...",
+                        options: ["Se gastan en la reacción", "Frenan la reacción", "Aumentan la velocidad sin gastarse", "Son siempre líquidos"],
+                        answer: 2,
+                        explanation: "Negativo. La definición de catalizador es que AUMENTA la velocidad y NO se gasta en el proceso."
+                    }
+                ]
+            }
+        ];
+
+        // --- VARIABLES DE ESTADO DEL JUEGO ---
+        let currentSectionIndex = 0;
+        let currentQuestionIndex = 0;
+        let lives = 5;
+        let earnedDigits = ["?", "?", "?", "?"];
+        const correctCode = "7391";
+
+        // --- REFERENCIAS A ELEMENTOS DEL DOM ---
+        const screens = document.querySelectorAll('.screen');
+        const introScreen = document.getElementById('intro-screen');
+        const sectionScreen = document.getElementById('section-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const gameoverScreen = document.getElementById('gameover-screen');
+        const sectionCompleteScreen = document.getElementById('section-complete-screen');
+        const finalCodeScreen = document.getElementById('final-code-screen');
+        const winScreen = document.getElementById('win-screen');
+
+        const startButton = document.getElementById('start-button');
+        const sectionButtonsContainer = document.getElementById('section-buttons');
+        const gotoCodeScreenButton = document.getElementById('goto-code-screen-button');
+
+        const sectionTitle = document.getElementById('section-title');
+        const questionCounter = document.getElementById('question-counter');
+        const livesCounter = document.getElementById('lives-counter');
+        const questionText = document.getElementById('question-text');
+        const answersList = document.getElementById('answers-list');
+        const feedbackMessage = document.getElementById('feedback-message');
+
+        const restartSectionButton = document.getElementById('restart-section-button');
+        const backToMenuButton = document.getElementById('back-to-menu-button');
+        const nextSectionButton = document.getElementById('next-section-button');
+        const earnedDigitText = document.getElementById('earned-digit-text');
+        
+        const finalDigitsDisplay = document.getElementById('final-digits-display');
+        const codeInputs = [
+            document.getElementById('code-1'),
+            document.getElementById('code-2'),
+            document.getElementById('code-3'),
+            document.getElementById('code-4')
+        ];
+        const checkCodeButton = document.getElementById('check-code-button');
+        const codeErrorMessage = document.getElementById('code-error-message');
+        const backToMenuFromCodeButton = document.getElementById('back-to-menu-from-code-button');
+
+        // --- FUNCIONES DEL JUEGO ---
+
+        // Función para cambiar entre pantallas
+        function showScreen(screenElement) {
+            screens.forEach(s => s.classList.remove('active'));
+            screenElement.classList.add('active');
+        }
+
+        // Mover foco en inputs de código
+        function moveToNext(current, nextFieldId) {
+            if (current.value.length >= current.maxLength) {
+                if (nextFieldId) {
+                    document.getElementById(nextFieldId).focus();
+                }
+            }
+        }
+        
+        // Rellenar la pantalla de selección de módulos
+        function populateSectionScreen() {
+            sectionButtonsContainer.innerHTML = '';
+            quizData.forEach((section, index) => {
+                const button = document.createElement('div');
+                button.classList.add('pip-button');
+                button.textContent = section.name;
+                if (section.completed) {
+                    button.textContent += " (COMPLETADO)";
+                    button.setAttribute('disabled', true);
+                } else {
+                    button.onclick = () => startQuiz(index);
+                }
+                sectionButtonsContainer.appendChild(button);
+            });
+            
+            // Comprobar si todas las secciones están completadas
+            const allCompleted = quizData.every(section => section.completed);
+            if (allCompleted) {
+                gotoCodeScreenButton.classList.remove('hidden');
+            }
+        }
+
+        // Iniciar un módulo de quiz
+        function startQuiz(sectionIndex) {
+            currentSectionIndex = sectionIndex;
+            currentQuestionIndex = 0;
+            lives = 5;
+            updateLivesDisplay();
+            sectionTitle.textContent = quizData[currentSectionIndex].name;
+            loadQuestion();
+            showScreen(quizScreen);
+        }
+
+        // Cargar la pregunta actual
+        function loadQuestion() {
+            feedbackMessage.classList.add('hidden');
+            feedbackMessage.textContent = '';
+            
+            if (currentQuestionIndex >= quizData[currentSectionIndex].questions.length) {
+                sectionComplete();
+                return;
+            }
+
+            const q = quizData[currentSectionIndex].questions[currentQuestionIndex];
+            questionText.textContent = q.question;
+            questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1}/10`;
+            answersList.innerHTML = '';
+
+            q.options.forEach((option, index) => {
+                const li = document.createElement('li');
+                li.textContent = option;
+                li.onclick = () => selectAnswer(index);
+                answersList.appendChild(li);
+            });
+        }
+
+        // Procesar la respuesta seleccionada
+        function selectAnswer(selectedIndex) {
+            const q = quizData[currentSectionIndex].questions[currentQuestionIndex];
+            
+            // Deshabilitar botones para evitar doble click
+            const options = answersList.querySelectorAll('li');
+            options.forEach(opt => opt.onclick = null);
+
+            if (selectedIndex === q.answer) {
+                // Correcto
+                feedbackMessage.textContent = ">>> Correcto. Procesando siguiente consulta...";
+                feedbackMessage.classList.remove('hidden', 'feedback-incorrect');
+                feedbackMessage.classList.add('feedback-correct');
+                currentQuestionIndex++;
+                setTimeout(loadQuestion, 1500);
+            } else {
+                // Incorrecto
+                lives--;
+                updateLivesDisplay();
+                feedbackMessage.innerHTML = `> FALLO: ${q.explanation}`;
+                feedbackMessage.classList.remove('hidden', 'feedback-correct');
+                feedbackMessage.classList.add('feedback-incorrect');
+
+                if (lives <= 0) {
+                    setTimeout(gameOver, 2000);
+                } else {
+                    // Carga la misma pregunta de nuevo
+                    setTimeout(loadQuestion, 3000); 
+                    // No, el usuario pierde vida pero avanza.
+                    currentQuestionIndex++;
+                    setTimeout(loadQuestion, 3500); // Espera 3.5s para que lea la explicación
+                }
+            }
+        }
+
+        // Actualizar el contador de vidas
+        function updateLivesDisplay() {
+            const heartIcon = '❤️';
+            const lostIcon = '🖤';
+            livesCounter.textContent = `Integridad: ${heartIcon.repeat(lives)}${lostIcon.repeat(5 - lives)}`;
+        }
+
+        // Fin del juego (sección)
+        function gameOver() {
+            showScreen(gameoverScreen);
+        }
+
+        // Sección completada
+        function sectionComplete() {
+            quizData[currentSectionIndex].completed = true;
+            const digit = quizData[currentSectionIndex].codeDigit;
+            earnedDigits[currentSectionIndex] = digit;
+            earnedDigitText.textContent = digit;
+            showScreen(sectionCompleteScreen);
+        }
+        
+        // Mostrar pantalla de código final
+        function showFinalCode() {
+            finalDigitsDisplay.textContent = earnedDigits.join(' - ');
+            codeInputs.forEach(input => input.value = '');
+            codeErrorMessage.textContent = '';
+            showScreen(finalCodeScreen);
+        }
+        
+        // Validar el código final
+        function checkFinalCode() {
+            const inputCode = codeInputs.map(input => input.value).join('');
+            if (inputCode === correctCode) {
+                showScreen(winScreen);
+            } else {
+                codeErrorMessage.textContent = ">>> CÓDIGO INCORRECTO. ESCLUSA BLOQUEADA. <<<";
+                codeInputs.forEach(input => input.value = '');
+                codeInputs[0].focus();
+            }
+        }
+
+        // --- INICIALIZACIÓN Y EVENT LISTENERS ---
+        
+        startButton.onclick = () => {
+            populateSectionScreen();
+            showScreen(sectionScreen);
+        };
+        
+        nextSectionButton.onclick = () => {
+            populateSectionScreen();
+            showScreen(sectionScreen);
+        };
+        
+        backToMenuButton.onclick = () => {
+            populateSectionScreen();
+            showScreen(sectionScreen);
+        };
+        
+        restartSectionButton.onclick = () => {
+            startQuiz(currentSectionIndex); // Reinicia la misma sección
+        };
+        
+        gotoCodeScreenButton.onclick = showFinalCode;
+        checkCodeButton.onclick = checkFinalCode;
+        
+        backToMenuFromCodeButton.onclick = () => {
+            populateSectionScreen();
+            showScreen(sectionScreen);
+        };
+
+        // Iniciar en la pantalla de intro
+        showScreen(introScreen);
+
+    </script>
+</body>
+</html>
