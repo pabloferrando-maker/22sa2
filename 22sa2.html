@@ -173,7 +173,7 @@
         </header>
 
         <!-- Pantalla de Introducción -->
-        <div id="intro-screen" class="screen active text-center">
+        <div id="intro-screen" class="screen text-center">
             <h2 class="text-2xl mb-4">> INICIANDO PROTOCOLO DE EXAMEN <</h2>
             <p class="mb-6 text-lg">¡Atención, Morador! Tu supervisor ha detectado niveles anómalos de desconocimiento químico. Completa los 4 módulos de este terminal para demostrar tu aptitud y conseguir una bonificación de 0,5 puntos para tu próximo examen.</p>
             <p class="mb-6 text-lg">Fallar 5 veces en un módulo resultará en un fallo crítico del sistema y deberás reiniciar el módulo.</p>
@@ -184,7 +184,7 @@
         </div>
 
         <!-- Pantalla de Selección de Sección -->
-        <div id="section-screen" class="screen">
+        <div id="section-screen" class="screen active">
             <h2 class="text-2xl mb-4">> MÓDULOS DE FORMACIÓN <</h2>
             <p class="mb-6">Selecciona un módulo. Completa los 4 para desbloquear la esclusa de bonificación.</p>
             <div id="section-buttons" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -200,11 +200,11 @@
             <div id="quiz-stats">
                 <span id="section-title">Módulo X</span>
                 <span id="question-counter">Pregunta X/10</span>
-                <span id="lives-counter">Integridad: ❤️❤️❤️❤️❤️</span>
-            </div>
-            <h3 id="question-text" class="text-xl md:text-2xl my-6 min-h-[5rem]">Cargando pregunta...</h3>
-            <ul id="answers-list" class="list-none p-0">
-                <!-- Opciones de respuesta generadas por JS -->
+            <span id="lives-counter">Integridad: ❤️❤️❤️❤️❤️</span>
+        </div>
+        <h3 id="question-text" class="text-xl md:text-2xl my-6 min-h-[5rem]">Cargando pregunta...</h3>
+        <ul id="answers-list" class="list-none p-0">
+            <!-- Opciones de respuesta generadas por JS -->
             </ul>
             <div id="feedback-message" class="hidden"></div>
         </div>
@@ -291,10 +291,10 @@
                         explanation: "Error. El Oro (Au) está formado por un solo tipo de átomo (Au). Es una sustancia elemental."
                     },
                     {
-                        question: "El Agua (H2O) es un...",
+                        question: "El Agua (H<sub>2</sub>O) es un...",
                         options: ["Compuesto", "Elemento", "Mezcla Heterogénea", "Cambio Físico"],
                         answer: 0,
-                        explanation: "Fallo. El H2O está formado por la unión química de dos elementos (H y O). Es un compuesto."
+                        explanation: "Fallo. El H<sub>2</sub>O está formado por la unión química de dos elementos (H y O). Es un compuesto."
                     },
                     {
                         question: "Propiedad de los cambios químicos:",
@@ -309,19 +309,19 @@
                         explanation: "¡Exacto! Pero has fallado. Los elementos (como Fe, O) son la base y no se pueden descomponer en algo más simple por métodos químicos."
                     },
                     {
-                        question: "El Dióxido de Carbono (CO2) es un ejemplo de...",
+                        question: "El Dióxido de Carbono (CO<sub>2</sub>) es un ejemplo de...",
                         options: ["Elemento", "Sustancia Elemental", "Mezcla", "Compuesto"],
                         answer: 3,
-                        explanation: "Error del sistema. El CO2 está formado por Carbono (C) y Oxígeno (O) unidos químicamente. Es un compuesto."
+                        explanation: "Error del sistema. El CO<sub>2</sub> está formado por Carbono (C) y Oxígeno (O) unidos químicamente. Es un compuesto."
                     },
                     {
                         question: "Propiedad de los cambios físicos:",
                         options: ["Son difíciles de revertir", "La sustancia sigue siendo la misma", "Aparece CO2", "Se forman elementos"],
                         answer: 1,
-                        explanation: "Fallo. En un cambio físico (ej. fundir hielo), la sustancia (agua) no cambia su identidad (sigue siendo H2O)."
+                        explanation: "Fallo. En un cambio físico (ej. fundir hielo), la sustancia (agua) no cambia su identidad (sigue siendo H<sub>2</sub>O)."
                     },
                     {
-                        question: "El Oxígeno (O2) que respiramos es...",
+                        question: "El Oxígeno (O<sub>2</sub>) que respiramos es...",
                         options: ["Un compuesto", "Una mezcla", "Una sustancia elemental", "Un cambio químico"],
                         answer: 2,
                         explanation: "Negativo. Aunque sean dos átomos (O), ambos son del mismo tipo (Oxígeno). Por tanto, es una sustancia elemental."
@@ -330,8 +330,8 @@
                         question: "¿Cómo se pueden descomponer los compuestos?",
                         options: ["Filtrando", "Mediante reacciones químicas", "Agitando", "No se pueden descomponer"],
                         answer: 1,
-                        explanation: "¡Incorrecto! Los compuestos (como H2O) solo se pueden romper en sus elementos (H y O) mediante reacciones químicas (ej. electrólisis)."
-                    }
+                        explanation: "¡Incorrecto! Los compuestos (como H<sub>2</sub>O) solo se pueden romper en sus elementos (H y O) mediante reacciones químicas (ej. electrólisis)."
+                    }, // Se añade coma flotante por si acaso
                 ]
             },
             {
@@ -346,7 +346,7 @@
                         explanation: "Error. Los REACTIVOS son las sustancias iniciales y se escriben SIEMPRE a la izquierda de la flecha."
                     },
                     {
-                        question: "En $A + B \rightarrow C + D$, ¿qué son C y D?",
+                        question: "En A + B &rarr; C + D, ¿qué son C y D?",
                         options: ["Reactivos", "Productos", "Catalizadores", "Elementos"],
                         answer: 1,
                         explanation: "Negativo. Las sustancias que se obtienen (a la derecha de la flecha) son los PRODUCTOS."
@@ -361,7 +361,7 @@
                         question: "Según Lavoisier, en una reacción química, la materia...",
                         options: ["Se crea", "Se destruye", "Ni se crea ni se destruye, solo se transforma", "Se duplica"],
                         answer: 2,
-                        explanation: "¡Radiación! "En una reacción química, la materia ni se crea ni se destruye, solo se transforma". Los átomos se reordenan."
+                        explanation: "¡Radiación! 'En una reacción química, la materia ni se crea ni se destruye, solo se transforma'. Los átomos se reordenan."
                     },
                     {
                         question: "Si reaccionan 10g de A con 5g de B, ¿cuánta masa de productos se obtendrá?",
@@ -370,16 +370,16 @@
                         explanation: "¡Error! Ley de Lavoisier: Masa Reactivos = Masa Productos. Si entran 10g + 5g = 15g, deben salir 15g de productos."
                     },
                     {
-                        question: "En la reacción $CH_4 + 2 O_2 \rightarrow CO_2 + 2 H_2O$, ¿qué es el $CH_4$?",
+                        question: "En la reacción CH<sub>4</sub> + 2 O<sub>2</sub> &rarr; CO<sub>2</sub> + 2 H<sub>2</sub>O, ¿qué es el CH<sub>4</sub>?",
                         options: ["Producto", "Reactivo", "Catalizador", "Elemento"],
                         answer: 1,
-                        explanation: "Negativo. El $CH_4$ (Metano) está a la izquierda de la flecha, es una de las sustancias que reaccionan. Es un reactivo."
+                        explanation: "Negativo. El CH<sub>4</sub> (Metano) está a la izquierda de la flecha, es una de las sustancias que reaccionan. Es un reactivo."
                     },
                     {
-                        question: "En la misma reacción ($CH_4 + 2 O_2 \rightarrow CO_2 + 2 H_2O$), ¿qué es el $CO_2$?",
+                        question: "En la misma reacción (CH<sub>4</sub> + 2 O<sub>2</sub> &rarr; CO<sub>2</sub> + 2 H<sub>2</sub>O), ¿qué es el CO<sub>2</sub>?",
                         options: ["Producto", "Reactivo", "Ambos", "Compuesto inicial"],
                         answer: 0,
-                        explanation: "Fallo. El $CO_2$ (Dióxido de Carbono) está a la derecha de la flecha, es una sustancia nueva que se forma. Es un producto."
+                        explanation: "Fallo. El CO<sub>2</sub> (Dióxido de Carbono) está a la derecha de la flecha, es una sustancia nueva que se forma. Es un producto."
                     },
                     {
                         question: "Si quemas 50g de papel y recoges 48g de cenizas, ¿qué pasó con los 2g que faltan?",
@@ -416,22 +416,22 @@
                         question: "Para ajustar una reacción, ¿qué NUNCA debes cambiar?",
                         options: ["Los Coeficientes (números grandes)", "Los Subíndices (números pequeños)", "Las flechas", "Los reactivos"],
                         answer: 1,
-                        explanation: "¡¡ERROR CRÍTICO!! Si cambias el subíndice (ej. $H_2O$ a $H_2O_2$) cambias la sustancia. Solo puedes poner Coeficientes delante."
+                        explanation: "¡¡ERROR CRÍTICO!! Si cambias el subíndice (ej. H<sub>2</sub>O a H<sub>2</sub>O<sub>2</sub>) cambias la sustancia. Solo puedes poner Coeficientes delante."
                     },
                     {
                         question: "Los números grandes que se ponen delante de las fórmulas se llaman...",
                         options: ["Subíndices", "Coeficientes estequiométricos", "Números atómicos", "Productos"],
                         answer: 1,
-                        explanation: "Fallo. Los números grandes (ej. el '2' en $2 H_2O$) se llaman coeficientes estequiométricos."
+                        explanation: "Fallo. Los números grandes (ej. el '2' en 2 H<sub>2</sub>O) se llaman coeficientes estequiométricos."
                     },
                     {
-                        question: "La reacción $A + B \rightarrow C$ es de tipo...",
+                        question: "La reacción A + B &rarr; C es de tipo...",
                         options: ["Descomposición", "Síntesis (o Combinación)", "Combustión", "Oxidación simple"],
                         answer: 1,
                         explanation: "Incorrecto. Dos reactivos simples se unen para formar un producto más complejo. Es una SÍNTESIS."
                     },
                     {
-                        question: "La reacción $A \rightarrow B + C$ es de tipo...",
+                        question: "La reacción A &rarr; B + C es de tipo...",
                         options: ["Descomposición", "Síntesis", "Combustión", "Oxidación"],
                         answer: 0,
                         explanation: "Error. Un reactivo complejo se 'rompe' en dos o más productos simples. Es una DESCOMPOSICIÓN."
@@ -446,7 +446,7 @@
                         question: "Una Combustión necesita un combustible (ej. madera) y un...",
                         options: ["Catalizador", "Producto", "Comburente (normalmente O2)", "Compuesto"],
                         answer: 2,
-                        explanation: "Fallo. Para que algo arda se necesita un comburente, que casi siempre es el Oxígeno ($O_2$)."
+                        explanation: "Fallo. Para que algo arda se necesita un comburente, que casi siempre es el Oxígeno (O<sub>2</sub>)."
                     },
                     {
                         question: "La oxidación del hierro (formar óxido) es una reacción donde se combina con...",
@@ -455,16 +455,16 @@
                         explanation: "Error. La definición original de OXIDACIÓN es la combinación de una sustancia con el OXÍGENO."
                     },
                     {
-                        question: "¿Está ajustada la reacción $H_2 + O_2 \rightarrow H_2O$?",
+                        question: "¿Está ajustada la reacción H<sub>2</sub> + O<sub>2</sub> &rarr; H<sub>2</sub>O?",
                         options: ["Sí", "No", "Solo a veces", "Imposible saberlo"],
                         answer: 1,
-                        explanation: "¡Incorrecto! Hay 2 Oxígenos en reactivos ($O_2$) y solo 1 en productos ($H_2O$). NO está ajustada."
+                        explanation: "¡Incorrecto! Hay 2 Oxígenos en reactivos (O<sub>2</sub>) y solo 1 en productos (H<sub>2</sub>O). NO está ajustada."
                     },
                     {
-                        question: "¿Cuál es la reacción $H_2 + Cl_2 \rightarrow 2 HCl$?",
+                        question: "¿Cuál es la reacción H<sub>2</sub> + Cl<sub>2</sub> &rarr; 2 HCl?",
                         options: ["Síntesis", "Descomposición", "Combustión", "Física"],
                         answer: 0,
-                        explanation: "Fallo. Dos reactivos ($H_2$ y $Cl_2$) se combinan para dar un solo producto ($HCl$). Es una SÍNTESIS."
+                        explanation: "Fallo. Dos reactivos (H<sub>2</sub> y Cl<sub>2</sub>) se combinan para dar un solo producto (HCl). Es una SÍNTESIS."
                     }
                 ]
             },
@@ -643,13 +643,13 @@
             }
 
             const q = quizData[currentSectionIndex].questions[currentQuestionIndex];
-            questionText.textContent = q.question;
+            questionText.innerHTML = q.question;
             questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1}/10`;
             answersList.innerHTML = '';
 
             q.options.forEach((option, index) => {
                 const li = document.createElement('li');
-                li.textContent = option;
+                li.innerHTML = option;
                 li.onclick = () => selectAnswer(index);
                 answersList.appendChild(li);
             });
@@ -681,11 +681,10 @@
                 if (lives <= 0) {
                     setTimeout(gameOver, 2000);
                 } else {
-                    // Carga la misma pregunta de nuevo
-                    setTimeout(loadQuestion, 3000); 
+                    // Carga la misma pregunta de nuevo <- ESTA LÍNEA SE ELIMINA, ERA UN BUG
                     // No, el usuario pierde vida pero avanza.
                     currentQuestionIndex++;
-                    setTimeout(loadQuestion, 3500); // Espera 3.5s para que lea la explicación
+                    setTimeout(loadQuestion, 3000); // Espera 3s para que lea la explicación (se ajusta de 3500)
                 }
             }
         }
@@ -733,6 +732,9 @@
 
         // --- INICIALIZACIÓN Y EVENT LISTENERS ---
         
+        // Rellenar la pantalla de módulos al cargar
+        populateSectionScreen();
+        
         startButton.onclick = () => {
             populateSectionScreen();
             showScreen(sectionScreen);
@@ -760,9 +762,11 @@
             showScreen(sectionScreen);
         };
 
-        // Iniciar en la pantalla de intro
-        showScreen(introScreen);
+        // Iniciar en la pantalla de intro (Ahora se anula por la clase 'active' en section-screen)
+        // showScreen(introScreen); 
+        // -> Se cambia la pantalla activa por defecto en el HTML
 
     </script>
 </body>
 </html>
+
